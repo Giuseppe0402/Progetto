@@ -8,6 +8,7 @@ public class animationStateControllerX : MonoBehaviour
     Animator animator;
     int isWalkingHash;
     int isRunningHash;
+    int isJumpingHash;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -17,6 +18,7 @@ public class animationStateControllerX : MonoBehaviour
         //increases performance
         isWalkingHash = Animator.StringToHash("isWalking");
         isRunningHash = Animator.StringToHash("isRunning");
+        isJumpingHash = Animator.StringToHash("isJumping");
 
     }
 
@@ -25,8 +27,10 @@ public class animationStateControllerX : MonoBehaviour
     {
         bool isRunning = animator.GetBool(isRunningHash);
         bool isWalking = animator.GetBool(isWalkingHash);
+        bool isJumping = animator.GetBool(isJumpingHash);
         bool forwardPressed = Input.GetKey("w");
         bool runPressed = Input.GetKey("left shift");
+        bool jumpPressed = Input.GetKey("space");
 
         //se il giocatore preme w
         if (!isWalking && forwardPressed)
@@ -42,6 +46,10 @@ public class animationStateControllerX : MonoBehaviour
             animator.SetBool(isWalkingHash, false);
         }
 
+        if (jumpPressed)
+        {
+            animator.SetBool(isJumpingHash, true);
+        }
         //se il giocatore sta camminando e non sta correndo e preme lo shift sinistro
         if (!isRunning && (forwardPressed && runPressed))
         {
