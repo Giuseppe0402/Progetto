@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class animationStateControllerX : MonoBehaviour
+public class animationStateController : MonoBehaviour
 {
     Animator animator;
     int isWalkingHash;

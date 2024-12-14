@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 7798558795873300289}
   - component: {fileID: -475498431016800482}
   - component: {fileID: 6573983092737866679}
+  - component: {fileID: 7199879734566673210}
   m_Layer: 0
   m_Name: PersonaggioMaschio
   m_TagString: Untagged
@@ -89,7 +90,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
-  NetworkTransformExpanded: 1
+  NetworkTransformExpanded: 0
   AuthorityMode: 0
   TickSyncChildren: 0
   UseUnreliableDeltas: 0
@@ -137,6 +138,21 @@ CharacterController:
   m_SkinWidth: 0.08
   m_MinMoveDistance: 0.001
   m_Center: {x: 0, y: 1.04, z: 0}
+--- !u!114 &7199879734566673210
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 714159134368367431}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ac92b76516265a148a53d2d069d8889b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  rotationSpeed: 10
+  walkSpeed: 5
+  runSpeed: 10
 --- !u!1001 &7967948597413226404
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -196,9 +212,6 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be2fc9fd7eb5d3d4daceacb085776c63, type: 3}
       insertIndex: -1
       addedObject: {fileID: 3342911121130194908}
-    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: be2fc9fd7eb5d3d4daceacb085776c63, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 7533361710359757933}
   m_SourcePrefab: {fileID: 100100000, guid: be2fc9fd7eb5d3d4daceacb085776c63, type: 3}
 --- !u!137 &4493755413566518151 stripped
 SkinnedMeshRenderer:
@@ -232,18 +245,6 @@ Animator:
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
   m_WriteDefaultValuesOnDisable: 0
---- !u!114 &7533361710359757933
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7084935004860324597}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 57c82c75d7ae00947b2ffab4c3fd0008, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!4 &7573205701348966479 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: be2fc9fd7eb5d3d4daceacb085776c63, type: 3}
