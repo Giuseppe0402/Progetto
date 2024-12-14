@@ -4,13 +4,17 @@ using UnityEngine;
 
 public class animationStateControllerX : MonoBehaviour
 {
-
     Animator animator;
     int isWalkingHash;
     int isRunningHash;
     int isJumpingHash;
 
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
+    public float rotationSpeed = 10f; // Velocità di rotazione graduale
+    public float walkSpeed = 5f; // Velocità di camminata
+    public float runSpeed = 10f; // Velocità di corsa
+
+    bool shiftPressedBeforeMovement = false; // Flag per determinare se Shift è stato premuto prima del movimento
+
     void Start()
     {
         animator = GetComponent<Animator>();
@@ -19,51 +23,70 @@ public class animationStateControllerX : MonoBehaviour
         isWalkingHash = Animator.StringToHash("isWalking");
         isRunningHash = Animator.StringToHash("isRunning");
         isJumpingHash = Animator.StringToHash("isJumping");
-
     }
 
-    // Update is called once per frame
     void Update()
     {
-        bool isRunning = animator.GetBool(isRunningHash);
-        bool isWalking = animator.GetBool(isWalkingHash);
-        bool isJumping = animator.GetBool(isJumpingHash);
+        // Input del giocatore
         bool forwardPressed = Input.GetKey("w");
+        bool backPressed = Input.GetKey("s");
+        bool moveLeftPressed = Input.GetKey("a");
+        bool moveRightPressed = Input.GetKey("d");
         bool runPressed = Input.GetKey("left shift");
         bool jumpPressed = Input.GetKey("space");
 
-        //se il giocatore preme w
-        if (!isWalking && forwardPressed)
+        // Se Shift è premuto senza direzione di movimento (WASD), non fare nulla
+        if (runPressed && !forwardPressed && !backPressed && !moveLeftPressed && !moveRightPressed)
         {
-            //allora setta il boolean isWalkign come vero
-            animator.SetBool(isWalkingHash, true);
+            shiftPressedBeforeMovement = true; // Impedisce movimento se Shift è premuto senza WASD
+        }
+        else if (forwardPressed || backPressed || moveLeftPressed || moveRightPressed)
+        {
+            // Se un tasto WASD è premuto, resetta il flag
+            if (shiftPressedBeforeMovement)
+            {
+                shiftPressedBeforeMovement = false; // Reset del flag
+            }
         }
 
-        //se il giocatore non preme w
-        if (isWalking && !forwardPressed)
+        // Determina la velocità del movimento
+        float currentSpeed = (runPressed && !shiftPressedBeforeMovement) ? runSpeed : walkSpeed;
+
+        // Calcola la direzione del movimento
+        Vector3 moveDirection = Vector3.zero;
+
+        if (forwardPressed) moveDirection += Vector3.forward;
+        if (backPressed) moveDirection += Vector3.back;
+        if (moveLeftPressed) moveDirection += Vector3.left;
+        if (moveRightPressed) moveDirection += Vector3.right;
+
+        // Se c'è una direzione di movimento e Shift non è stato premuto prima
+        if (moveDirection != Vector3.zero && !shiftPressedBeforeMovement)
         {
-            //allora setta il boolean isWalking come falso
+            animator.SetBool(isWalkingHash, !runPressed); // Cammina se non stai correndo
+            animator.SetBool(isRunningHash, runPressed); // Corri se stai correndo
+
+            // Ruota il personaggio nella direzione del movimento
+            Quaternion targetRotation = Quaternion.LookRotation(moveDirection.normalized);
+            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
+
+            // Muove il personaggio nella direzione corrente
+            transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);
+        }
+        else
+        {
             animator.SetBool(isWalkingHash, false);
+            animator.SetBool(isRunningHash, false);
         }
 
+        // Logica per il salto
         if (jumpPressed)
         {
             animator.SetBool(isJumpingHash, true);
         }
-        //se il giocatore sta camminando e non sta correndo e preme lo shift sinistro
-        if (!isRunning && (forwardPressed && runPressed))
+        else
         {
-            //allora setta il boolean isRunning come vero
-            animator.SetBool(isRunningHash, true);
-
+            animator.SetBool(isJumpingHash, false);
         }
-
-        //se il giocatore sta correndo e si ferma o smette di camminare
-        if (isRunning && (!forwardPressed || !runPressed))
-        {
-            //allora setta il booleano isRunning come falso
-            animator.SetBool(isRunningHash, false);
-        }
-
     }
 }
