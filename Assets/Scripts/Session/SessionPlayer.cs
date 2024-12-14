@@ -5,7 +5,7 @@ public class SessionPlayer : NetworkBehaviour
 {
     //Variabili serializzate per impostare la velocità di movimento del giocatore e il renderer del mesh.
     [SerializeField] private float moveSpeed = 2;
-    [SerializeField] private MeshRenderer meshRenderer = null;
+    [SerializeField] private SkinnedMeshRenderer meshRenderer = null;
 
     //Variabili private per la gestione del controller del personaggio, dell'ID e del colore del giocatore.
     private CharacterController controller = null;
