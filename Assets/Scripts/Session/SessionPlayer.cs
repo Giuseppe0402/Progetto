@@ -11,6 +11,7 @@ public class SessionPlayer : NetworkBehaviour
     [SerializeField] private GameObject canvasPrefab;  // Prefab del Canvas da assegnare dinamicamente
     private Canvas playerCanvas;  // Riferimento al Canvas del giocatore
     [SerializeField] private GameObject inventoryPrefab;  // Prefab dell'Inventario
+    [SerializeField] private CharacterController characterController;   
 
     //Variabili private per la gestione del controller del personaggio, dell'ID e del colore del giocatore.
     private CharacterController controller = null;
@@ -68,7 +69,7 @@ public class SessionPlayer : NetworkBehaviour
                 velocità = velocità_run;
             }
 
-            controller.Move(movimento * Time.deltaTime * velocità);
+            characterController.Move(movimento * Time.deltaTime * velocità);
         }
     }
 

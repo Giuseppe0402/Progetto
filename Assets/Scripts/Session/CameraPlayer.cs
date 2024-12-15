@@ -28,7 +28,7 @@ public class CameraPlayer : MonoBehaviour
         float y = Input.GetAxis("Mouse Y") * Time.deltaTime * sensibilità;
 
         rotazione -= y;
-        rotazione = Mathf.Clamp(rotazione, -60f, 60f);
+        rotazione = Mathf.Clamp(rotazione, -90f, 90f);
 
         // Ruota la telecamera
         transform.localRotation = Quaternion.Euler(rotazione, 0, 0);
