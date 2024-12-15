@@ -14,7 +14,7 @@ public class LobbyPlayerItem : MonoBehaviour
     [SerializeField] public TextMeshProUGUI statusText = null;
     [SerializeField] private Button kickButton = null;
     [SerializeField] private Button selectButton = null;
-    
+
     private string lobbyId = ""; //ID della lobby a cui appartiene il giocatore
     private Player player = null; //Riferimento al giocatore
 
@@ -23,7 +23,7 @@ public class LobbyPlayerItem : MonoBehaviour
         kickButton.onClick.AddListener(Kick);
         selectButton.onClick.AddListener(Clicked);
     }
-    
+
     public void Initialize(Player player, string lobbyId, string hostId) //Metodo per inizializzare l'oggetto con i dati del giocatore e della lobby
     {
         this.player = player;
@@ -56,5 +56,5 @@ public class LobbyPlayerItem : MonoBehaviour
         PlayerProfileMenu panel = (PlayerProfileMenu)PanelManager.GetSingleton("player_profile");
         panel.Open(player.Id, player.Data["name"].Value);
     }
-    
+
 }

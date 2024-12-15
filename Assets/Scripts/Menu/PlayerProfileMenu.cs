@@ -4,15 +4,17 @@ using Unity.Services.Authentication;
 using Unity.Services.Friends;
 using TMPro;
 using UnityEngine.UI;
+using System.Collections.Generic;
 
 public class PlayerProfileMenu : Panel
 {
     //Riferimenti agli elementi UI per la gestione del profilo del giocatore.
     [SerializeField] private TextMeshProUGUI nameText = null;
+    [SerializeField] private TextMeshProUGUI descriptionText = null;
     [SerializeField] private Button closeButton = null;
     [SerializeField] private Button addFriendButton = null;
     [SerializeField] private Button removeFriendButton = null;
-     
+
     private string _id = null; //Variabile per memorizzare l'ID del giocatore che si sta visualizzando.
 
     public override void Initialize() //Metodo di inizializzazione del pannello.
@@ -25,8 +27,10 @@ public class PlayerProfileMenu : Panel
         addFriendButton.onClick.AddListener(AddFriend);
         removeFriendButton.onClick.AddListener(RemoveFriend);
         base.Initialize();
+
+        CustomizationMenu.OnCharacterSelected += UpdateDescription;
     }
-    
+
     public override void Open() //Metodo che apre il pannello del profilo del giocatore.
     {
         HideAllButtons();
@@ -36,15 +40,16 @@ public class PlayerProfileMenu : Panel
             _id = AuthenticationService.Instance.PlayerId;
         }
         nameText.text = "";
+        
     }
 
     public void Open(string playerId, string playerName) //Metodo che apre il pannello con l'ID e il nome di un giocatore specifico.
     {
         _id = playerId;
         Open();
-        SetupUI(playerId, playerName); 
+        SetupUI(playerId, playerName);
     }
-    
+
     private void SetupUI(string id, string playerName) //Metodo che imposta l'interfaccia utente con i dettagli del giocatore.
     {
         nameText.text = playerName;
@@ -56,7 +61,13 @@ public class PlayerProfileMenu : Panel
             removeFriendButton.gameObject.SetActive(isFriend); //Mostra il bottone per rimuovere l'amico se è già un amico.
         }
     }
-    
+
+    private void UpdateDescription(string characterName, string description)
+    {
+        nameText.text = characterName;
+        descriptionText.text = description; // Aggiorna la descrizione
+    }
+
     private async void AddFriend() //Metodo asincrono per aggiungere un amico.
     {
         addFriendButton.interactable = false;
@@ -93,7 +104,7 @@ public class PlayerProfileMenu : Panel
         }
         removeFriendButton.interactable = true;
     }
-    
+
     private bool IsFriend(string id) //Metodo che verifica se il giocatore è nella lista amici.
     {
         for (int i = 0; i < FriendsService.Instance.Friends.Count; i++)
@@ -105,7 +116,7 @@ public class PlayerProfileMenu : Panel
         }
         return false;
     }
-    
+
     private bool IsSentFriendRequest(string id) //Metodo che verifica se una richiesta di amicizia è stata inviata a un giocatore.
     {
         for (int i = 0; i < FriendsService.Instance.OutgoingFriendRequests.Count; i++)
@@ -117,13 +128,20 @@ public class PlayerProfileMenu : Panel
         }
         return false;
     }
-    
+
     private void ClosePanel() //Metodo che chiude il pannello del profilo e resetta l'ID.
     {
         Close();
         _id = null;
     }
-    
+
+    private void OnDestroy()
+    {
+        // Annulla l'iscrizione all'evento quando il pannello viene distrutto
+        CustomizationMenu.OnCharacterSelected -= UpdateDescription;
+
+    }
+
     private void HideAllButtons() //Metodo che nasconde tutti i bottoni del pannello.
     {
         addFriendButton.gameObject.SetActive(false);

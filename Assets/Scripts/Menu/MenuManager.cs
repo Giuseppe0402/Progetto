@@ -8,7 +8,9 @@ public class MenuManager : MonoBehaviour
     //Variabili per gestire lo stato di inizializzazione del MenuManager e degli eventi.
     private bool initialized = false;
     private bool eventsInitialized = false;
-    
+
+    public string PlayerName { get; set; } // Proprietà per tenere traccia del nome del giocatore
+
     private static MenuManager singleton = null; //Istanza statica del MenuManager (Singleton).
 
     public static MenuManager Singleton  //Proprietà statica per ottenere l'istanza unica del MenuManager.
@@ -101,14 +103,17 @@ public class MenuManager : MonoBehaviour
         {
             await AuthenticationService.Instance.SignInWithUsernamePasswordAsync(username, password);
         }
-        catch (AuthenticationException)
+        catch (Exception ex) when (ex.Message.Contains("Invalid username or password"))
         {
+            // Gestione errore per credenziali errate
             ShowError(ErrorMenu.Action.OpenAuthMenu, "Username o Password errati", "OK");
         }
         catch (RequestFailedException)
         {
-            ShowError(ErrorMenu.Action.OpenAuthMenu, "Connessione alla reta fallita.", "Riprova");
+            // Gestione errore di rete
+            ShowError(ErrorMenu.Action.OpenAuthMenu, "Connessione alla rete fallita.", "Riprova");
         }
+        
     }
     
     public async void SignUpWithUsernameAndPasswordAsync(string username, string password) //Funzione asincrona per registrare un nuovo utente con username e password.
@@ -118,13 +123,20 @@ public class MenuManager : MonoBehaviour
         {
             await AuthenticationService.Instance.SignUpWithUsernamePasswordAsync(username, password);
         }
-        catch (AuthenticationException)
+        catch (AuthenticationException ex) when (ex.Message.Contains("username already exists"))
         {
+            // Gestione errore per utente già esistente
+            ShowError(ErrorMenu.Action.OpenAuthMenu, "L'utente esiste già.", "OK");
+        }
+        catch (Exception ex) when (ex.Message.Contains("Invalid username or password"))
+        {
+            // Gestione errore per credenziali non valide
             ShowError(ErrorMenu.Action.OpenAuthMenu, "Errore durante la registrazione.", "OK");
         }
         catch (RequestFailedException)
         {
-            ShowError(ErrorMenu.Action.OpenAuthMenu, "Connessione alla reta fallita.", "Riprova");
+            // Gestione errore di rete
+            ShowError(ErrorMenu.Action.OpenAuthMenu, "Connessione alla rete fallita.", "Riprova");
         }
     }
     

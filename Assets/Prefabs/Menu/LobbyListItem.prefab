@@ -204,15 +204,15 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls: []
   m_Sprite: {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  m_Type: 1
+  m_Type: 2
   m_PreserveAspect: 0
-  m_FillCenter: 1
+  m_FillCenter: 0
   m_FillMethod: 4
   m_FillAmount: 1
   m_FillClockwise: 1
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
-  m_PixelsPerUnitMultiplier: 1
+  m_PixelsPerUnitMultiplier: 0.6
 --- !u!114 &1288373545340605446
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1133,7 +1133,6 @@ MonoBehaviour:
   nameText: {fileID: 7710103369298391968}
   playersText: {fileID: 6520113301410940000}
   hostText: {fileID: 1018150407846776092}
-  modeText: {fileID: 0}
   mapText: {fileID: 8592768615672964233}
   languageText: {fileID: 1811910583279311731}
   joinButton: {fileID: 1288373545340605446}

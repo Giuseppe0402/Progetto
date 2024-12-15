@@ -8,7 +8,7 @@ using System;
 public class FriendRequestReceivedItem : MonoBehaviour
 {
     //Riferimenti agli oggetti UI
-    [SerializeField] public TextMeshProUGUI nameText = null;
+    [SerializeField] private TextMeshProUGUI nameText = null; public TextMeshProUGUI NameText { get { return nameText; } }
     [SerializeField] private Button acceptButton = null;
     [SerializeField] private Button rejectButton = null;
 
@@ -26,7 +26,7 @@ public class FriendRequestReceivedItem : MonoBehaviour
     {
         memberId = relationship.Member.Id;
         id = relationship.Id;
-        nameText.text = relationship.Member.Profile.Name;
+        NameText.text = relationship.Member.Profile.Name;
     }
     
     private async void Accept() //Metodo asincrono per accettare una richiesta di amicizia.
