@@ -8,9 +8,7 @@ public class animationStateController : NetworkBehaviour
     private int isRunningHash;
     private int isJumpingHash;
 
-    [SerializeField] private float rotationSpeed = 5f; // Velocità di rotazione graduale
-    [SerializeField] private float walkSpeed = 0f; // Velocità di camminata
-    [SerializeField] private float runSpeed = 0f; // Velocità di corsa
+    
 
     private bool shiftPressedBeforeMovement = false; // Flag per determinare se Shift è stato premuto prima del movimento
 
@@ -71,7 +69,7 @@ public class animationStateController : NetworkBehaviour
         }
 
         // Determina la velocità del movimento
-        float currentSpeed = (runPressed && !shiftPressedBeforeMovement) ? runSpeed : walkSpeed;
+        
 
         // Calcola la direzione del movimento
         Vector3 moveDirection = Vector3.zero;
@@ -86,13 +84,6 @@ public class animationStateController : NetworkBehaviour
         {
             isWalking.Value = !runPressed;
             isRunning.Value = runPressed;
-
-            // Ruota il personaggio nella direzione del movimento
-            Quaternion targetRotation = Quaternion.LookRotation(moveDirection.normalized);
-            transform.rotation = Quaternion.Lerp(transform.rotation, targetRotation, Time.deltaTime * rotationSpeed);
-
-            // Muove il personaggio nella direzione corrente
-            transform.Translate(Vector3.forward * currentSpeed * Time.deltaTime);
         }
         else
         {

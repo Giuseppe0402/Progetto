@@ -3,27 +3,31 @@ using UnityEngine;
 
 public class InteractableObject : NetworkBehaviour, IInteractable
 {
-    [SerializeField] private Canvas interactCanvas;
     [SerializeField] private Sprite itemIcon; // Icona per l'inventario
     [SerializeField] private string requiredCombination;
     [SerializeField] private bool requiresCombination = false;
+    private Outline outline; // Riferimento al componente Outline
 
     private void Awake()
     {
-        if (interactCanvas != null)
+        outline = GetComponent<Outline>();
+        if (outline != null)
         {
-            interactCanvas.gameObject.SetActive(false);
+            outline.enabled = false; // Disabilita l'effetto all'inizio
         }
+        else
+        {
+            Debug.LogWarning($"{gameObject.name} non ha un componente Outline.");
+        }
+
     }
 
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
         {
-            if (interactCanvas != null)
-            {
-                interactCanvas.gameObject.SetActive(true);
-            }
+            // Abilita l'effetto Outline
+            SetOutline(true);
         }
     }
 
@@ -31,10 +35,16 @@ public class InteractableObject : NetworkBehaviour, IInteractable
     {
         if (other.CompareTag("Player"))
         {
-            if (interactCanvas != null)
-            {
-                interactCanvas.gameObject.SetActive(false);
-            }
+            // Disabilita l'effetto Outline
+            SetOutline(false);
+        }
+    }
+
+    private void SetOutline(bool enable)
+    {
+        if (outline != null)
+        {
+            outline.enabled = enable;
         }
     }
 
