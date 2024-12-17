@@ -7,6 +7,7 @@
     "com.unity.inputsystem": "1.11.2",
     "com.unity.multiplayer.samples.coop": "https://github.com/Unity-Technologies/com.unity.multiplayer.samples.coop.git?path=/Packages/com.unity.multiplayer.samples.coop#main",
     "com.unity.netcode.gameobjects": "2.0.0",
+    "com.unity.probuilder": "6.0.4",
     "com.unity.render-pipelines.universal": "17.0.3",
     "com.unity.services.cloudsave": "3.2.0",
     "com.unity.services.friends": "1.1.0",
