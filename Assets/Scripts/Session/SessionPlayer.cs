@@ -1,120 +1,192 @@
+using System.Collections.Generic;
+using TMPro;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class SessionPlayer : NetworkBehaviour
 {
-<<<<<<< Updated upstream
     //Variabili serializzate per impostare la velocità di movimento del giocatore e il renderer del mesh.
-=======
-    //Variabili serializzate per impostare la velocit� di movimento del giocatore e il renderer del mesh.
->>>>>>> Stashed changes
-    [SerializeField] private float moveSpeed = 2;
-    [SerializeField] private MeshRenderer meshRenderer = null;
+    [SerializeField] private SkinnedMeshRenderer meshRenderer = null;
+    [SerializeField] private GameObject canvasPrefab;  // Prefab del Canvas da assegnare dinamicamente
+    private Canvas playerCanvas;  // Riferimento al Canvas del giocatore
+    [SerializeField] private GameObject inventoryPrefab;  // Prefab dell'Inventario
+    [SerializeField] private CharacterController characterController;   
 
     //Variabili private per la gestione del controller del personaggio, dell'ID e del colore del giocatore.
-    CharacterController controller;
+    private CharacterController controller = null;
     private string _colorHex = "";
     private string _id = "";
-<<<<<<< Updated upstream
-    
-    private Rigidboy characterRigidbody;
-    private PlayerInput playerInput;
-    prvate PlayerInputActions playerInputActions;
-=======
-    float velocità;
-    float velocità_walk = 5f;
-    float velocità_run = 10f;
-    public Transform TerraCheck;
-    float distanzaTerra = 1f;
-    public LayerMask TerraMask; //componente che ci dice quando il player tocca il terreno (momento nel quale "disattivo" la forza di gravità)
-    bool toccaterra;
-    Vector3 velocitày;
-    float gravità = -9.8f;
-    float altezzasalto = 1f;
->>>>>>> Stashed changes
+
+    private float velocità;
+    private float velocità_walk = 2f;
+    private float velocità_run = 10f;
+    [SerializeField] private Transform TerraCheck;
+    private float distanzaTerra = 1f;
+    [SerializeField] private LayerMask TerraMask; //componente che ci dice quando il player tocca il terreno (momento nel quale "disattivo" la forza di gravità)
+    private bool toccaterra;
+    private Vector3 velocitày;
+    private float gravità = -9.8f;
+    private float altezzasalto = 1f;
 
     private void Awake() //Metodo chiamato all'inizio della vita dell'oggetto per inizializzare il controller.
     {
-        characterRigidbody= GetComponent<Rigidboy>();
-        playerInput= GetComponent<PlayerInput>();
-
-        playerInputActions = new PlayerInputActions();
-        PlayerInputActions.Player.Enable();
-        PlayerInputActions.Player.Jump.performed += Jump; //buffer
-        PlayerInputActions.Player.Movement.performed += Movement_performed; //buffer
-
-        //controller = GetComponent<CharacterController>();
+        controller = GetComponent<CharacterController>();
     }
 
-    private void FixedUpdate() //metodo per continuare il movimento premendo un solo tasto
+    private void Start()
     {
-        Vector2 inputVector= PlayerInputActions.Player.Movement.ReadValue<Vector2>();
-        float speed = 5f;
-        characterRigidbody.AddForce(new Vector3(inputVector.x, 0, inputVectory.y)*speed, ForceMode.Force);
-    }
-
-    private void Movement_performed (InputAction.CallbackContext context)
-    {
-        Debug.Log(context);
-        Vector2 inputVector= context.ReadValue<Vector2>(); //vector2 perchè legge il movimento che avviene solo su 2 dimensioni
-        float speed = 5f;
-        characterRigidbody.AddForce(new Vector3(inputVector.x, 0, inputVectory.y)*speed, ForceMode.Force); //lo "0" probabilmente è l'asse z
-    }
-
-    private void Jump(InputAction.CallbackContext context) //da mettere in isOwner
-    {
-        Debug.Log(context);
-        if(context.performed)
-        {
-           Debug.Log("Jump!" + context.phase) //messaggio di debug in console
-           characterRigidbody.AddForce(Vector3.up *5f, ForceMode.impulse)
-        }
-    }
-    
-
-    /*private void Update() //Metodo chiamato ad ogni frame per gestire il movimento del giocatore.
-    {
-        PlayerInputActions
         if (IsOwner)
         {
-            float x = Input.GetAxis("Horizontal");
-            float z = Input.GetAxis("Vertical");
-            Vector3 movimento = transform.right * x + transform.forward * z; //direzione che daremo al player
- 
-            if(movimento!=Vector3.zero)
-            {
-                velocità = velocità_walk;
-
-                if(Input.GetKey(KeyCode.LeftShift))
-                {
-                    velocità = velocità_run;
-                } 
-           
-                controller.Move(movimento * Time.deltaTime * velocità);
-            } 
-            
-            toccaterra = Physics.CheckSphere(TerraCheck.position, distanzaTerra, TerraMask); //funzione che ritorna "true" se collide altrimenti "false"    
-            
-            if(toccaterra && velocitày.y < 0)
-            {
-                velocitày.y = -10f;
-            } 
-       
-            if(Input.GetButtonDown("Jump") && toccaterra)
-            {
-                velocitày.y = Mathf.Sqrt(gravità * altezzasalto * -2f);
-            }
-       
-            velocitày.y += gravità * Time.deltaTime;
-            controller.Move(velocitày * Time.deltaTime);
+            CreatePlayerCanvas();
+            playerCanvas.gameObject.SetActive(true);
+            NotifyCombinationLock();  // Se serve per la logica del puzzle
         }
-<<<<<<< Updated upstream
-    }*/
-=======
-
     }
->>>>>>> Stashed changes
-    
+
+    private void Update()
+    {
+        if (IsOwner)
+        {
+            HandleHorizontalMovement();
+            HandleGravityAndJump();
+            HandleInteraction();
+        }
+    }
+
+    private void HandleHorizontalMovement()
+    {
+        float x = Input.GetAxis("Horizontal");
+        float z = Input.GetAxis("Vertical");
+
+        Vector3 movimento = transform.right * x + transform.forward * z;
+        if (movimento != Vector3.zero)
+        {
+            velocità = velocità_walk;
+
+            if (Input.GetKey(KeyCode.LeftShift))
+            {
+                velocità = velocità_run;
+            }
+
+            characterController.Move(movimento * Time.deltaTime * velocità);
+        }
+    }
+
+    private void HandleGravityAndJump()
+    {
+        toccaterra = Physics.CheckSphere(TerraCheck.position, distanzaTerra, TerraMask); //funzione che ritorna "true" se collide altrimenti "false"    
+
+        if (toccaterra && velocitày.y < 0)
+        {
+            velocitày.y = -2f;
+        }
+
+        if (Input.GetButtonDown("Jump") && toccaterra)
+        {
+            velocitày.y = Mathf.Sqrt(gravità * altezzasalto * -2f);
+        }
+
+        velocitày.y += gravità * Time.deltaTime;
+        controller.Move(velocitày * Time.deltaTime);
+    }
+
+    public void HandleInteraction()
+    {
+        if (Input.GetKeyDown(KeyCode.E))
+        {
+            Ray ray = new Ray(transform.position + Vector3.up * 0.5f, transform.forward);
+            if (Physics.Raycast(ray, out RaycastHit hit, 2f))
+            {
+                IInteractable interactable = hit.collider.GetComponent<IInteractable>();
+                if (interactable != null)
+                {
+                    Debug.Log($"Tentativo di interazione con: {hit.collider.name}");
+                    interactable.Interact(this);
+
+                    CombinationLock combinationLock = hit.collider.GetComponent<CombinationLock>();
+                    if (combinationLock != null)
+                    {
+                        Debug.Log("Chiamando ShowPanel");
+                        combinationLock.ShowPanel("1234", hit.collider.gameObject);
+                    }
+                }
+                else
+                {
+                    Debug.LogWarning("Nessun componente IInteractable trovato sull'oggetto colpito.");
+                }
+            }
+            else
+            {
+                Debug.LogWarning("Raycast non ha colpito nulla.");
+            }
+        }
+    }
+
+    private void CreatePlayerCanvas()
+    {
+        if (canvasPrefab != null)
+        {
+            GameObject canvasObject = Instantiate(canvasPrefab, transform);
+            playerCanvas = canvasObject.GetComponent<Canvas>();
+
+            if (playerCanvas == null)
+            {
+                Debug.LogError("Canvas prefab non contiene un componente Canvas.");
+                return;
+            }
+
+            playerCanvas.gameObject.SetActive(false);  // Disabilita fino a quando serve
+
+            if (inventoryPrefab != null)
+            {
+                GameObject inventoryObject = Instantiate(inventoryPrefab, transform);
+                Inventory inventory = inventoryObject.GetComponent<Inventory>();
+
+                List<Image> inventorySlots = new List<Image>(playerCanvas.GetComponentsInChildren<Image>());
+                inventory.InitializeInventory(inventorySlots);
+            }
+            else
+            {
+                Debug.LogError("Inventory Prefab non assegnato al SessionPlayer.");
+            }
+        }
+        else
+        {
+            Debug.LogError("Canvas Prefab non assegnato al SessionPlayer.");
+        }
+    }
+
+    private void NotifyCombinationLock()
+    {
+        CombinationLock combinationLock = FindFirstObjectByType<CombinationLock>();
+
+        if (combinationLock != null)
+        {
+            // Trova dinamicamente il pannello, l'input e il bottone
+            GameObject codePanel = playerCanvas.transform.Find("CodePanel")?.gameObject;
+            TMP_InputField codeInput = codePanel?.transform.Find("CodeInput")?.GetComponent<TMP_InputField>();
+            Button codeButton = codePanel?.transform.Find("CodeButton")?.GetComponent<Button>();
+
+            // Verifica la presenza dei componenti necessari
+            if (codePanel != null && codeInput != null && codeButton != null)
+            {
+                combinationLock.Panel = codePanel;  // Assegna il panel
+                combinationLock.CombinationInput = codeInput;  // Assegna l'input
+                combinationLock.ConfirmButton = codeButton;
+                Debug.Log("Riferimenti di CombinationLock impostati dinamicamente.");
+            }
+            else
+            {
+                Debug.LogError("Uno o più componenti necessari non sono stati trovati in CodePanel.");
+            }
+        }
+        else
+        {
+            Debug.LogError("CombinationLock non trovato.");
+        }
+    }
+
 
     [Rpc(SendTo.Everyone)] //Metodo chiamato tramite RPC per applicare l'ID e il colore del giocatore. Destinato a tutti i client.
     public void ApplyDataRpc(string id, string colorHex)
@@ -129,5 +201,5 @@ public class SessionPlayer : NetworkBehaviour
     {
         ApplyDataRpc(_id, _colorHex);
     }
-    
+
 }

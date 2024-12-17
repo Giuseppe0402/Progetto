@@ -8,7 +8,7 @@ using System;
 
 public class FriendsList : MonoBehaviour
 {
-    [SerializeField] public TextMeshProUGUI nameText = null;
+    [SerializeField] private TextMeshProUGUI nameText = null; public TextMeshProUGUI NameText { get { return nameText; } }
     [SerializeField] private Button removeButton = null;
 
     private string id = "";
@@ -23,7 +23,7 @@ public class FriendsList : MonoBehaviour
     {
         memberId = relationship.Member.Id;
         id = relationship.Id;
-        nameText.text = relationship.Member.Profile.Name;
+        NameText.text = relationship.Member.Profile.Name;
     }
 
     private async void RemoveFriend()

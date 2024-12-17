@@ -23,6 +23,11 @@ public class LobbyMenu : Panel
     [SerializeField] private Button leaveButton = null;
     [SerializeField] private Button readyButton = null;
     [SerializeField] private Button startButton = null;
+    [SerializeField] private TMP_InputField chatInputField = null;
+    [SerializeField] private ChatMessagePrefab chatMessagePrefab = null;
+    [SerializeField] private RectTransform chatMessageContainer = null;
+    [SerializeField] private Button sendButton = null;
+    private List<string> chatMessages = new List<string>();
 
     //Variabili per gestire lo stato della lobby
     private Lobby lobby = null; public Lobby JoinedLobby { get { return lobby; } } //Riferimento alla lobby corrente
@@ -35,7 +40,7 @@ public class LobbyMenu : Panel
     private string eventsLobbyId = "";
     private bool isStarted = false;
     private bool isJoining = false;
-    
+
     public override void Initialize() //Metodo per inizializzare la lobby e assegnare i vari listener ai pulsanti corrispondenti.
     {
         if (IsInitialized)
@@ -47,9 +52,87 @@ public class LobbyMenu : Panel
         leaveButton.onClick.AddListener(LeaveLobby);
         readyButton.onClick.AddListener(SwitchReady);
         startButton.onClick.AddListener(StartGame);
+        sendButton.onClick.AddListener(SendChatMessage);
+        chatInputField.onSubmit.AddListener(SendChatMessageFromInput);
         base.Initialize();
     }
-    
+
+    private async void SendChatMessage()
+    {
+        string message = chatInputField.text.Trim(); // Legge il testo dall'input
+        if (!string.IsNullOrEmpty(message))
+        {
+            // Invia il messaggio alla lobby
+            await SendMessageToLobbyAsync(AuthenticationService.Instance.PlayerName, message);
+            chatInputField.text = string.Empty; // Pulisce il campo input
+        }
+    }
+
+    private async void SendChatMessageFromInput(string message)
+    {
+        message = message.Trim();
+        if (!string.IsNullOrEmpty(message))
+        {
+            await SendMessageToLobbyAsync(AuthenticationService.Instance.PlayerName, message);
+            chatInputField.text = string.Empty; // Pulisce il campo input
+        }
+    }
+
+    private async Task SendMessageToLobbyAsync(string playerName, string message)
+    {
+        try
+        {
+            string serializedMessage = $"{playerName}:{message}";
+
+            UpdateLobbyOptions options = new UpdateLobbyOptions();
+            options.Data = new Dictionary<string, DataObject>
+        {
+            { "chat_message", new DataObject(visibility: DataObject.VisibilityOptions.Member, value: serializedMessage) }
+        };
+
+            // Mostra subito il messaggio localmente
+            DisplayMessage(playerName, message);
+
+            // Aggiorna la lobby
+            lobby = await LobbyService.Instance.UpdateLobbyAsync(lobby.Id, options);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+        }
+    }
+
+    private void DisplayMessage(string playerName, string message)
+    {
+        // Aggiungi il messaggio al buffer
+        chatMessages.Add($"{playerName}: {message}");
+        if (chatMessages.Count > 50) // Mantieni solo gli ultimi 50 messaggi
+        {
+            chatMessages.RemoveAt(0);
+        }
+
+        // Mostra il messaggio nella UI
+        ChatMessagePrefab newMessage = Instantiate(chatMessagePrefab, chatMessageContainer);
+        newMessage.SetMessage(playerName, message);
+
+        // Aggiorna il layout e scorri in basso
+        Canvas.ForceUpdateCanvases();
+        ScrollToBottom();
+    }
+
+    private void ScrollToBottom()
+    {
+        // Ottieni il componente ScrollRect dal genitore
+        ScrollRect scrollRect = chatMessageContainer.GetComponentInParent<ScrollRect>();
+
+        if (scrollRect != null)
+        {
+            // Imposta la posizione in fondo
+            scrollRect.verticalNormalizedPosition = 0f;
+            Canvas.ForceUpdateCanvases(); // Assicura che il layout sia aggiornato
+        }
+    }
+
     private async void StartGame() //Metodo per avviare il gioco (solo per l'host)
     {
         PanelManager.Open("loading");
@@ -65,7 +148,7 @@ public class LobbyMenu : Panel
             SessionManager.role = SessionManager.Role.Host;
             SessionManager.joinCode = code;
             SessionManager.lobbyID = lobby.Id;
-            
+
             SetLobbyStarting();
 
             //Apre il pannello che avvia il gioco
@@ -101,18 +184,18 @@ public class LobbyMenu : Panel
         StartingSessionMenu panel = (StartingSessionMenu)PanelManager.GetSingleton("start");
         isStarted = lobby.Data.ContainsKey("started");
         string joinCode = lobby.Data.ContainsKey("join_code") ? lobby.Data["join_code"].Value : null;
-        if(panel.isLoading == false && isStarted) //Se il gioco è avviato e il pannello non sta caricando, avvia il gioco
+        if (panel.isLoading == false && isStarted) //Se il gioco è avviato e il pannello non sta caricando, avvia il gioco
         {
             panel.StartGameByLobby(lobby, true); //waitForConfirmation è su true perché questo è il client, quindi dovrà aspettare l'host
         }
 
-        if(isJoining == false && panel.isLoading && string.IsNullOrEmpty(joinCode) == false && panel.isConfirmed == false) //Se il gioco è in fase di caricamento e il codice di join è disponibile, unisciti alla partita
+        if (isJoining == false && panel.isLoading && string.IsNullOrEmpty(joinCode) == false && panel.isConfirmed == false) //Se il gioco è in fase di caricamento e il codice di join è disponibile, unisciti alla partita
         {
             panel.StartGameByLobby(lobby, true);
             JoinGame(joinCode);
         }
     }
-    
+
     private async void JoinGame(string joinCode) //Metodo per i clients per unirsi alla partita utilizzando il codice di join
     {
         if (string.IsNullOrEmpty(joinCode) == false)
@@ -130,7 +213,7 @@ public class LobbyMenu : Panel
                 SessionManager.role = SessionManager.Role.Client;
                 SessionManager.joinCode = joinCode;
                 SessionManager.lobbyID = lobby.Id;
-                
+
                 StartingSessionMenu panel = (StartingSessionMenu)PanelManager.GetSingleton("start");
                 await UnsubscribeToEventsAsync();
                 panel.StartGameConfirm();
@@ -145,19 +228,19 @@ public class LobbyMenu : Panel
             PanelManager.Close("loading");
         }
     }
-    
+
     private void Update() //Metodo Update per il controllo periodico della lobby
     {
         if (lobby == null)
         {
             return;
         }
-        
+
         if (isHost == false && isJoining == false)
         {
             CheckStartGameStatus();
         }
-        
+
         if (lobby.HostId == AuthenticationService.Instance.PlayerId && sendingHeartbeat == false)
         {
             updateTimer += Time.deltaTime;
@@ -169,7 +252,7 @@ public class LobbyMenu : Panel
             HeartbeatLobbyAsync();
         }
     }
-    
+
     private async void HeartbeatLobbyAsync() //Metodo per inviare un "heartbeat" per mantenere attiva la connessione con la lobby
     {
         sendingHeartbeat = true;
@@ -183,12 +266,12 @@ public class LobbyMenu : Panel
         }
         sendingHeartbeat = false;
     }
-    
+
     public void Open(Lobby lobby) //Metodo per aprire la lobby con un determinato oggetto lobby
     {
         if (eventsLobbyId != lobby.Id)
         {
-            _= SubscribeToEventsAsync(lobby.Id);
+            _ = SubscribeToEventsAsync(lobby.Id);
         }
         this.lobby = lobby;
         nameText.text = lobby.Name;
@@ -198,7 +281,7 @@ public class LobbyMenu : Panel
         LoadPlayers();
         Open();
     }
-    
+
     private void LoadPlayers() //Metodo per caricare la lista dei giocatori e aggiornare lo stato del pulsante "Start"
     {
         ClearPlayersList();
@@ -230,7 +313,7 @@ public class LobbyMenu : Panel
             Close();
         }
     }
-    
+
     public async void CreateLobby(string lobbyName, int maxPlayers, bool isPrivate, string map, string language) //Metodo per creare una nuova lobby
     {
         PanelManager.Open("loading");
@@ -243,7 +326,7 @@ public class LobbyMenu : Panel
                 { "map", new DataObject(visibility: DataObject.VisibilityOptions.Public, value: map) },
                 { "language", new DataObject(visibility: DataObject.VisibilityOptions.Public, value: language) },
             };
-            
+
             //Questi sono i dati specifici dell'utente che sta creando la lobby
             options.Player = new Player();
             options.Player.Data = new Dictionary<string, PlayerDataObject>();
@@ -262,22 +345,22 @@ public class LobbyMenu : Panel
         }
         PanelManager.Close("loading");
     }
-    
+
     public async void JoinLobby(string id) //Metodo per unirsi ad una lobby con un ID specifico
     {
         PanelManager.Open("loading");
         try
         {
             JoinLobbyByIdOptions options = new JoinLobbyByIdOptions();
-            
+
             //Questi sono i dati dei giocatori che si stanno unendo alla lobby
             options.Player = new Player();
             options.Player.Data = new Dictionary<string, PlayerDataObject>();
             options.Player.Data.Add("name", new PlayerDataObject(visibility: PlayerDataObject.VisibilityOptions.Public, value: AuthenticationService.Instance.PlayerName));
             options.Player.Data.Add("ready", new PlayerDataObject(visibility: PlayerDataObject.VisibilityOptions.Public, value: "0"));
-            
+
             lobby = await LobbyService.Instance.JoinLobbyByIdAsync(id, options);
-            
+
             Open(lobby);
             PanelManager.Close("lobby_search");
         }
@@ -287,7 +370,7 @@ public class LobbyMenu : Panel
         }
         PanelManager.Close("loading");
     }
-    
+
     public async void UpdateLobby(string lobbyId, string lobbyName, int maxPlayers, bool isPrivate, string map, string language) //Metodo per aggiornare una lobby esistente
     {
         PanelManager.Open("loading");
@@ -312,12 +395,12 @@ public class LobbyMenu : Panel
         }
         PanelManager.Close("loading");
     }
-    
+
     private void LeaveLobby() //Metodo per abbandonare la lobby corrente
     {
-        _= Leave();
+        _ = Leave();
     }
-    
+
     private async Task Leave() //Metodo asincrono per lasciare la lobby
     {
         PanelManager.Open("loading");
@@ -333,7 +416,7 @@ public class LobbyMenu : Panel
         }
         PanelManager.Close("loading");
     }
-    
+
     private async void SwitchReady() //Metodo per cambiare lo stato di prontezza del giocatore
     {
         readyButton.interactable = false;
@@ -347,11 +430,11 @@ public class LobbyMenu : Panel
         }
         catch (Exception e)
         {
-            Debug.LogException(e); 
+            Debug.LogException(e);
         }
         readyButton.interactable = true;
     }
-    
+
     private void ClearPlayersList() //Metodo per pulire la lista dei giocatori visualizzati
     {
         LobbyPlayerItem[] items = lobbyPlayersContainer.GetComponentsInChildren<LobbyPlayerItem>();
@@ -363,15 +446,15 @@ public class LobbyMenu : Panel
             }
         }
     }
-    
+
     private void ClosePanel() //Metodo per chiudere il pannello
     {
         Close();
     }
-    
+
     private async Task<bool> SubscribeToEventsAsync(string id) //Metodo per sottoscriversi agli eventi della lobby
     {
-        try 
+        try
         {
             var callbacks = new LobbyEventCallbacks();
             callbacks.LobbyChanged += OnChanged;
@@ -387,7 +470,7 @@ public class LobbyMenu : Panel
         }
         return false;
     }
-    
+
     private async Task UnsubscribeToEventsAsync() //Metodo per annullare la sottoscrizione dagli eventi della lobby
     {
         try
@@ -403,7 +486,7 @@ public class LobbyMenu : Panel
             Debug.LogException(e);
         }
     }
-    
+
     private void OnKicked() //Metodo che gestisce l'espulsione dalla lobby
     {
         if (IsOpen)
@@ -415,7 +498,7 @@ public class LobbyMenu : Panel
         isStarted = false;
         isJoining = false;
     }
-    
+
     private void OnChanged(ILobbyChanges changes) //Metodo che gestisce i cambiamenti alla lobby
     {
         if (changes.LobbyDeleted)
@@ -436,6 +519,19 @@ public class LobbyMenu : Panel
             if (IsOpen)
             {
                 LoadPlayers();
+            }
+            if (lobby.Data.ContainsKey("chat_message"))
+            {
+                string serializedMessage = lobby.Data["chat_message"].Value;
+                string[] parts = serializedMessage.Split(':');
+                if (parts.Length >= 2)
+                {
+                    string playerName = parts[0];
+                    string message = parts[1];
+
+                    // Mostra il messaggio nella chat
+                    DisplayMessage(playerName, message);
+                }
             }
         }
     }
@@ -461,6 +557,5 @@ public class LobbyMenu : Panel
 
         }
     }
-
 
 }

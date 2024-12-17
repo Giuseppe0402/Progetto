@@ -11,7 +11,7 @@ public class GetInputMenu : Panel
     [SerializeField] private Button positiveButton = null;
     [SerializeField] private Button negativeButton = null;
     [SerializeField] private TMP_InputField input = null;
-    
+
     public delegate void Callback(string input); //Delegato per gestire l'input dell'utente
     private Callback callback = null; //Funzione di callback che riceve l'input dell'utente
     private Type type = Type.String; //Tipo di input previsto (default è stringa)
@@ -31,7 +31,7 @@ public class GetInputMenu : Panel
         negativeButton.onClick.AddListener(Negative);
         base.Initialize();
     }
-    
+
     public void Open(Callback callback, Type type, uint maxLength, string message = "Quanto?", string buttonPositive = "Conferma", string buttonNegative = "Cancella") //Metodo per aprire il menu di input
     {
         Open();
@@ -58,7 +58,7 @@ public class GetInputMenu : Panel
             default: input.contentType = TMP_InputField.ContentType.Standard; break;
         }
     }
-    
+
     private void Positive() //Metodo che viene chiamato quando l'utente preme il pulsante "Positivo"
     {
         string value = input.text.Trim();
@@ -71,10 +71,10 @@ public class GetInputMenu : Panel
             Close();
         }
     }
-    
+
     private void Negative() //Metodo che viene chiamato quando l'utente preme il pulsante "Negativo"
     {
         Close();
     }
-    
+
 }

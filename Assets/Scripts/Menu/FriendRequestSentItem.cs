@@ -8,7 +8,7 @@ using System;
 public class FriendRequestSentItem : MonoBehaviour
 {
     //Riferimenti agli oggetti UI
-    [SerializeField] public TextMeshProUGUI nameText = null;
+    [SerializeField] private TextMeshProUGUI nameText = null; private TextMeshProUGUI NameText { get { return nameText; } }
     [SerializeField] private Button deleteButton = null;
 
     //Variabili private per memorizzare gli ID della relazione.
@@ -24,7 +24,7 @@ public class FriendRequestSentItem : MonoBehaviour
     {
         memberId = relationship.Member.Id;
         id = relationship.Id;
-        nameText.text = relationship.Member.Profile.Name;
+        NameText.text = relationship.Member.Profile.Name;
     }
     
     private async void DeleteRequest() //Metodo asincrono per eliminare una richiesta di amicizia inviata.

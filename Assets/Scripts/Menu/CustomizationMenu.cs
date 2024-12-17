@@ -10,7 +10,7 @@ using SaveOptions = Unity.Services.CloudSave.Models.Data.Player.SaveOptions;
 public class CustomizationMenu : Panel
 {
     //Riferimenti agli oggetti UI
-    [SerializeField] public TextMeshProUGUI characterText = null;
+    [SerializeField] private TextMeshProUGUI characterText = null; public TextMeshProUGUI CharacterText { get { return characterText; } }
     [SerializeField] private Button characterButton = null;
     [SerializeField] private Button colorButton = null;
     [SerializeField] private Button closeButton = null;
@@ -25,8 +25,16 @@ public class CustomizationMenu : Panel
     private int character = 0;
 
     //Liste di possibili opzioni per personaggi e colori
-    private string[] characters = { "Uomo", "Donna"};
+    private string[] characters = { "Nathan", "Lara" };
     private Color[] colors = { Color.green, Color.red, Color.blue, Color.magenta, Color.cyan };
+
+    private Dictionary<string, string> characterDescriptions = new Dictionary<string, string>
+    {
+        { "Nathan", "Descrizione di Nathan" },
+        { "Lara", "Descrizione di Lara" }
+    };
+
+    public static event Action<string, string> OnCharacterSelected; // Evento per notificare il cambiamento del personaggio
 
     public override void Initialize() //Metodo di inizializzazione e aggiunge i vari listener ai bottoni corrispondenti
     {
@@ -40,17 +48,17 @@ public class CustomizationMenu : Panel
         saveButton.onClick.AddListener(Save);
         base.Initialize();
     }
-    
+
     public override void Open() //Metodo per aprire il menu
     {
         base.Open();
-        LoadData(); 
+        LoadData();
     }
-    
+
     private async void LoadData() //Metodo per caricare i dati salvati
     {
         //Inizializza i valori
-        characterText.text = "";
+        CharacterText.text = "";
         characterButton.interactable = false;
         colorButton.interactable = false;
         saveButton.interactable = false;
@@ -114,6 +122,8 @@ public class CustomizationMenu : Panel
             character = 0;
         }
         ApplyData();
+
+        OnCharacterSelected?.Invoke(characters[character], characterDescriptions[characters[character]]);
     }
 
     private void ChangeColor() //Metodo per cambiare il colore
@@ -125,17 +135,17 @@ public class CustomizationMenu : Panel
         }
         ApplyData();
     }
-    
+
     private void ApplyData() //Metodo per applicare i dati aggiornati (personaggio e colore)
     {
-        characterText.text = characters[character];
-        characterText.color = colors[color];
+        CharacterText.text = characters[character];
+        CharacterText.color = colors[color];
         saveButton.interactable = character != savedCharacter || color != savedColor;
     }
-    
+
     private void ClosePanel() //Metodo per chiudere il menu
     {
         Close();
     }
-    
+
 }

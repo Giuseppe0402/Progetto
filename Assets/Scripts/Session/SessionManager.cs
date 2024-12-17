@@ -8,6 +8,7 @@ using Unity.Services.CloudSave.Models.Data.Player;
 using Unity.Services.Lobbies;
 using Unity.Services.Lobbies.Models;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class SessionManager : NetworkBehaviour
 {
@@ -16,6 +17,7 @@ public class SessionManager : NetworkBehaviour
     public static Role role = Role.Client; //Ruolo del giocatore, che può essere Client, Host o Server
     public static string joinCode = ""; //Codice di join della lobby
     public static string lobbyID = ""; //ID della lobby
+    private Dictionary<ulong, SessionPlayer> connectedPlayers = new Dictionary<ulong, SessionPlayer>();
 
     public enum Role //Enum per definire i ruoli nel gioco
     {
@@ -82,6 +84,7 @@ public class SessionManager : NetworkBehaviour
             RpcParams rpcParams = NetworkManager.Singleton.RpcTarget.Single(id, RpcTargetUse.Temp);
             InitializeRpc(rpcParams);
         }
+
     }
 
     [Rpc(SendTo.SpecifiedInParams)] //Middleman tra host e client
@@ -122,8 +125,10 @@ public class SessionManager : NetworkBehaviour
         var prefab = charactersPrefab.PrefabList[character].Prefab.GetComponent<NetworkObject>();
         //Istanzia e spawna il personaggio nella rete
         var networkObject = NetworkManager.Singleton.SpawnManager.InstantiateAndSpawn(prefab, rpcParams.Receive.SenderClientId, true, true, false, position, quaternion.identity);
+
         SessionPlayer player = networkObject.GetComponent<SessionPlayer>();
         player.ApplyDataRpc(id, color);
+        connectedPlayers[rpcParams.Receive.SenderClientId] = player;
         SessionPlayer[] players = FindObjectsByType<SessionPlayer>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
         if (players != null)
         {
@@ -151,5 +156,80 @@ public class SessionManager : NetworkBehaviour
             Debug.LogException(e);
         }
     }
-    
+
+    private void OnClientDisconnected(ulong clientId)
+    {
+        if (connectedPlayers.ContainsKey(clientId))
+        {
+            connectedPlayers.Remove(clientId);
+            Debug.Log($"Server: PlayerObject rimosso per il client {clientId}");
+        }
+    }
+
+    public SessionPlayer GetPlayerByClientId(ulong clientId)
+    {
+        if (connectedPlayers.TryGetValue(clientId, out var player))
+        {
+            return player;
+        }
+        return null;
+    }
+
+    public Inventory GetInventoryByClientId(ulong clientId)
+    {
+        if (NetworkManager.Singleton.ConnectedClients.TryGetValue(clientId, out var client))
+        {
+            var player = client.PlayerObject?.GetComponent<SessionPlayer>();
+            return player?.GetComponentInChildren<Inventory>();
+        }
+        return null;
+    }
+
+    public async void ExitSession()
+    {
+        try
+        {
+            // Verifica se l'utente è autenticato
+            if (!AuthenticationService.Instance.IsSignedIn)
+            {
+                Debug.LogError("Utente non autenticato.");
+                return;
+            }
+
+            string playerId = AuthenticationService.Instance.PlayerId;
+
+            // Controlla se c'è un lobby ID valido
+            if (!string.IsNullOrEmpty(lobbyID))  // Usa il lobbyID che hai già
+            {
+                // Rimuovi il giocatore dalla lobby se l'ID è valido
+                await LobbyService.Instance.RemovePlayerAsync(lobbyID, playerId);
+            }
+            else
+            {
+                Debug.LogWarning("Nessun lobby attivo o valido per rimuovere il giocatore.");
+            }
+
+            // Chiudi la connessione
+            NetworkManager.Singleton.Shutdown();
+
+            // Disconnetti l'utente se è connesso
+            if (AuthenticationService.Instance.IsSignedIn)
+            {
+                AuthenticationService.Instance.SignOut();
+            }
+
+            // Carica la scena di autenticazione o menu
+            SceneManager.LoadScene("Menu");
+
+        }
+        catch (LobbyServiceException e)
+        {
+            Debug.LogError("Errore durante la rimozione dalla lobby: " + e);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Errore durante l'uscita dalla sessione: " + e);
+        }
+    }
+
 }

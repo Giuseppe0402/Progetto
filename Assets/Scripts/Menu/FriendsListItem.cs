@@ -8,7 +8,7 @@ using System;
 public class FriendsListItem : MonoBehaviour
 {
     //Riferimenti agli oggetti UI
-    [SerializeField] public TextMeshProUGUI nameText = null;
+    [SerializeField] private TextMeshProUGUI nameText = null; public TextMeshProUGUI NameText { get { return nameText; } }
     [SerializeField] private Button removeButton = null;
 
     //Variabili private per memorizzare gli ID della relazione.
@@ -24,7 +24,7 @@ public class FriendsListItem : MonoBehaviour
     {
         memberId = relationship.Member.Id;
         id = relationship.Id;
-        nameText.text = relationship.Member.Profile.Name;
+        NameText.text = relationship.Member.Profile.Name;
     }
     
     private async void RemoveFriend() //Metodo asincrono per rimuovere un amico dalla lista.

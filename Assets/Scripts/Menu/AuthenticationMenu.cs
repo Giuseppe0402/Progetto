@@ -10,6 +10,7 @@ public class AuthenticationMenu : Panel
     [SerializeField] private Button signinButton = null;
     [SerializeField] private Button signupButton = null;
     [SerializeField] private Button anonymousButton = null;
+    [SerializeField] private Button quitButton = null;
 
     public override void Initialize() //Metodo di inizializzazione del pannello. Aggiunge i listener ai bottoni per eseguire le azioni corrispondenti.
     {
@@ -20,6 +21,7 @@ public class AuthenticationMenu : Panel
         anonymousButton.onClick.AddListener(AnonymousSignIn);
         signinButton.onClick.AddListener(SignIn);
         signupButton.onClick.AddListener(SignUp);
+        quitButton.onClick.AddListener(Quit);
         base.Initialize();
     }
 
@@ -62,14 +64,28 @@ public class AuthenticationMenu : Panel
             }
         }
     }
-    
+
+    private void Quit()
+    {
+        ActionConfirmMenu panel = (ActionConfirmMenu)PanelManager.GetSingleton("action_confirm");
+        panel.Open(QuitResult, "Sei sicuro di voler uscire?", "Si", "No");
+    }
+
+    private void QuitResult(ActionConfirmMenu.Result result)
+    {
+        if (result == ActionConfirmMenu.Result.Positive)
+        {
+            Application.Quit();
+        }
+    }
+
     private bool IsPasswordValid(string password) //Metodo per la validazione della password (Serve per il servizio che stiamo usando)
     {
         if (password.Length < 8 || password.Length > 30)
         {
             return false;
         }
-        
+
         bool hasUppercase = false;
         bool hasLowercase = false;
         bool hasDigit = false;
@@ -96,5 +112,5 @@ public class AuthenticationMenu : Panel
         }
         return hasUppercase && hasLowercase && hasDigit && hasSymbol;
     }
-    
+
 }
