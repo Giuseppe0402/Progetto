@@ -18,16 +18,16 @@ public class SessionPlayer : NetworkBehaviour
     private string _colorHex = "";
     private string _id = "";
 
-    private float velocità;
-    private float velocità_walk = 2f;
-    private float velocità_run = 10f;
+    private float velocita;
+    private float velocitaWalk = 2f;
+    private float velocitaRun = 10f;
     [SerializeField] private Transform TerraCheck;
     private float distanzaTerra = 1f;
     [SerializeField] private LayerMask TerraMask; //componente che ci dice quando il player tocca il terreno (momento nel quale "disattivo" la forza di gravità)
-    private bool toccaterra;
-    private Vector3 velocitày;
-    private float gravità = -9.8f;
-    private float altezzasalto = 1f;
+    private bool toccaTerra;
+    private Vector3 velocitay;
+    private float gravita = -9.8f;
+    private float altezzaSalto = 1f;
 
     private void Awake() //Metodo chiamato all'inizio della vita dell'oggetto per inizializzare il controller.
     {
@@ -62,33 +62,33 @@ public class SessionPlayer : NetworkBehaviour
         Vector3 movimento = transform.right * x + transform.forward * z;
         if (movimento != Vector3.zero)
         {
-            velocità = velocità_walk;
+            velocita = velocitaWalk;
 
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                velocità = velocità_run;
+                velocita = velocitaRun;
             }
 
-            characterController.Move(movimento * Time.deltaTime * velocità);
+            characterController.Move(movimento * Time.deltaTime * velocita);
         }
     }
 
     private void HandleGravityAndJump()
     {
-        toccaterra = Physics.CheckSphere(TerraCheck.position, distanzaTerra, TerraMask); //funzione che ritorna "true" se collide altrimenti "false"    
+        toccaTerra = Physics.CheckSphere(TerraCheck.position, distanzaTerra, TerraMask); //funzione che ritorna "true" se collide altrimenti "false"    
 
-        if (toccaterra && velocitày.y < 0)
+        if (toccaTerra && velocitay.y < 0)
         {
-            velocitày.y = -2f;
+            velocitay.y = -2f;
         }
 
-        if (Input.GetButtonDown("Jump") && toccaterra)
+        if (Input.GetButtonDown("Jump") && toccaTerra)
         {
-            velocitày.y = Mathf.Sqrt(gravità * altezzasalto * -2f);
+            velocitay.y = Mathf.Sqrt(gravita * altezzaSalto * -2f);
         }
 
-        velocitày.y += gravità * Time.deltaTime;
-        controller.Move(velocitày * Time.deltaTime);
+        velocitay.y += gravita * Time.deltaTime;
+        controller.Move(velocitay * Time.deltaTime);
     }
 
     public void HandleInteraction()
