@@ -6,7 +6,7 @@ using UnityEngine.UI;
 
 public class SessionPlayer : NetworkBehaviour
 {
-    //Variabili serializzate per impostare la velocit‡ di movimento del giocatore e il renderer del mesh.
+    //Variabili serializzate per impostare la velocit√† di movimento del giocatore e il renderer del mesh.
     [SerializeField] private SkinnedMeshRenderer meshRenderer = null;
     [SerializeField] private GameObject canvasPrefab;  // Prefab del Canvas da assegnare dinamicamente
     private Canvas playerCanvas;  // Riferimento al Canvas del giocatore
@@ -18,15 +18,15 @@ public class SessionPlayer : NetworkBehaviour
     private string _colorHex = "";
     private string _id = "";
 
-    private float velocit‡;
-    private float velocit‡_walk = 2f;
-    private float velocit‡_run = 10f;
+    private float velocit√†;
+    private float velocit√†_walk = 2f;
+    private float velocit√†_run = 10f;
     [SerializeField] private Transform TerraCheck;
     private float distanzaTerra = 1f;
-    [SerializeField] private LayerMask TerraMask; //componente che ci dice quando il player tocca il terreno (momento nel quale "disattivo" la forza di gravit‡)
+    [SerializeField] private LayerMask TerraMask; //componente che ci dice quando il player tocca il terreno (momento nel quale "disattivo" la forza di gravit√†)
     private bool toccaterra;
-    private Vector3 velocit‡y;
-    private float gravit‡ = -9.8f;
+    private Vector3 velocit√†y;
+    private float gravit√† = -9.8f;
     private float altezzasalto = 1f;
 
     private void Awake() //Metodo chiamato all'inizio della vita dell'oggetto per inizializzare il controller.
@@ -62,14 +62,14 @@ public class SessionPlayer : NetworkBehaviour
         Vector3 movimento = transform.right * x + transform.forward * z;
         if (movimento != Vector3.zero)
         {
-            velocit‡ = velocit‡_walk;
+            velocit√† = velocit√†_walk;
 
             if (Input.GetKey(KeyCode.LeftShift))
             {
-                velocit‡ = velocit‡_run;
+                velocit√† = velocit√†_run;
             }
 
-            characterController.Move(movimento * Time.deltaTime * velocit‡);
+            characterController.Move(movimento * Time.deltaTime * velocit√†);
         }
     }
 
@@ -77,18 +77,18 @@ public class SessionPlayer : NetworkBehaviour
     {
         toccaterra = Physics.CheckSphere(TerraCheck.position, distanzaTerra, TerraMask); //funzione che ritorna "true" se collide altrimenti "false"    
 
-        if (toccaterra && velocit‡y.y < 0)
+        if (toccaterra && velocit√†y.y < 0)
         {
-            velocit‡y.y = -2f;
+            velocit√†y.y = -2f;
         }
 
         if (Input.GetButtonDown("Jump") && toccaterra)
         {
-            velocit‡y.y = Mathf.Sqrt(gravit‡ * altezzasalto * -2f);
+            velocit√†y.y = Mathf.Sqrt(gravit√† * altezzasalto * -2f);
         }
 
-        velocit‡y.y += gravit‡ * Time.deltaTime;
-        controller.Move(velocit‡y * Time.deltaTime);
+        velocit√†y.y += gravit√† * Time.deltaTime;
+        controller.Move(velocit√†y * Time.deltaTime);
     }
 
     public void HandleInteraction()
@@ -178,7 +178,7 @@ public class SessionPlayer : NetworkBehaviour
             }
             else
             {
-                Debug.LogError("Uno o pi˘ componenti necessari non sono stati trovati in CodePanel.");
+                Debug.LogError("Uno o pi√π componenti necessari non sono stati trovati in CodePanel.");
             }
         }
         else
