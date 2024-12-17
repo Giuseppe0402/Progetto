@@ -19,7 +19,7 @@ public class SessionPlayer : NetworkBehaviour
     private string _id = "";
 
     private float velocita;
-    private float velocitaWalk = 2f;
+    private float velocitaWalk = 5f;
     private float velocitaRun = 10f;
     [SerializeField] private Transform TerraCheck;
     private float distanzaTerra = 1f;
