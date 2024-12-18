@@ -7,6 +7,7 @@ public class InteractableObject : NetworkBehaviour, IInteractable
     [SerializeField] private string requiredCombination;
     [SerializeField] private bool requiresCombination = false;
     private Outline outline; // Riferimento al componente Outline
+    private bool isInteractable = true; // Flag per gestire l'interazione
 
     private void Awake()
     {
@@ -50,6 +51,8 @@ public class InteractableObject : NetworkBehaviour, IInteractable
 
     public void Interact(SessionPlayer player)
     {
+        if (!isInteractable) return; // Ignora se l'interazione non è permessa
+
         if (IsServer)
         {
             // Gestiamo direttamente l'interazione sul server
@@ -92,6 +95,8 @@ public class InteractableObject : NetworkBehaviour, IInteractable
 
     private void HandleInteraction(SessionPlayer player)
     {
+        if (!isInteractable) return;
+
         if (requiresCombination)
         {
             if (!string.IsNullOrEmpty(requiredCombination))
@@ -191,6 +196,11 @@ public class InteractableObject : NetworkBehaviour, IInteractable
                 }
             }
         }
+    }
+
+    public void SetInteractable(bool state)
+    {
+        isInteractable = state;
     }
 
 }
