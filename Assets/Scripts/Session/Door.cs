@@ -4,7 +4,9 @@ using Unity.Netcode;
 public class Door : NetworkBehaviour, IInteractable
 {
     [SerializeField] private Sprite requiredItemSprite; // Sprite della chiave richiesta
-    [SerializeField] private string requiredItemName = "Key"; // Nome della chiave (opzionale, solo per debugging)
+    [SerializeField] private string requiredItemName = "Key"; // Nome della chiave
+
+    [SerializeField] private AudioClip interactionSound; // Suono per l'interazione
 
     public void Interact(SessionPlayer player)
     {
@@ -54,6 +56,7 @@ public class Door : NetworkBehaviour, IInteractable
         {
             Debug.Log($"Giocatore {player.name} ha l'oggetto richiesto {requiredItemName}. Rimuovi la porta.");
             inventory.RemoveItem(requiredItemSprite); // Rimuovi l'oggetto dall'inventario
+            AudioManager.PlayClip(interactionSound);
             NotifyClientsDoorOpenClientRpc(); // Notifica i client per rimuovere la porta
         }
         else

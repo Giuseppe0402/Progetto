@@ -22,7 +22,7 @@ public class CombinationLock : MonoBehaviour
         }
     }
 
-    private string correctCombination; // Combinazione corretta
+    private string correctCombination = "1712"; // Combinazione corretta
     private GameObject targetObject; // Oggetto con cui stiamo interagendo
 
     public delegate void OnCombinationCorrect(GameObject target);
@@ -31,8 +31,20 @@ public class CombinationLock : MonoBehaviour
     public static bool IsCodePanelActive { get; private set; } = false;
     public static bool WasCodePanelClosedThisFrame { get; private set; } = false;
 
+    [SerializeField] private AudioClip openPanelSound;
+    [SerializeField] private AudioClip correctCombinationSound;
+    [SerializeField] private AudioClip incorrectCombinationSound;
+
+    private AudioSource audioSource;
+
     private void Start()
     {
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            Debug.LogError("AudioSource non trovato! Aggiungine uno a questo GameObject.");
+        }
+
         // Se il panel è null, prova a trovarlo dinamicamente
         if (panel == null)
         {
@@ -97,6 +109,9 @@ public class CombinationLock : MonoBehaviour
         panel.SetActive(true);  // Mostra il pannello
         Time.timeScale = 0f;
 
+        // Riproduci il suono di apertura del pannello
+        PlaySound(openPanelSound);
+
         // Imposta il cursore sbloccato e visibile
         Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
@@ -143,9 +158,10 @@ public class CombinationLock : MonoBehaviour
             return;
         }
 
-        if (combinationInput.text == correctCombination)
+        if (combinationInput.text == "1712")
         {
             Debug.Log("Combinazione corretta!");
+            PlaySound(correctCombinationSound);
             CombinationCorrectEvent?.Invoke(targetObject);
             ShowSuccessFeedback();
             HidePanel();
@@ -154,26 +170,28 @@ public class CombinationLock : MonoBehaviour
         {
             Debug.LogWarning("Combinazione errata.");
             ShowFailureFeedback();
+            PlaySound(incorrectCombinationSound);
         }
     }
 
     private void ShowSuccessFeedback()
     {
-        // Aggiungi il feedback di successo, come cambiare il colore del pannello, suonare un suono, etc.
         if (panel != null)
         {
             panel.GetComponent<Image>().color = Color.green;  // Esempio: cambia il colore del pannello in verde
         }
-        // Puoi aggiungere anche un suono di successo qui
     }
 
     private void ShowFailureFeedback()
     {
-        // Aggiungi il feedback di fallimento, come cambiare il colore del pannello, suonare un suono, etc.
         if (panel != null)
         {
             panel.GetComponent<Image>().color = Color.red;  // Esempio: cambia il colore del pannello in rosso
         }
-        // Puoi aggiungere anche un suono di errore qui
+    }
+
+    private void PlaySound(AudioClip clip)
+    {
+        AudioManager.PlayClip(clip);
     }
 }

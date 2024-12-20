@@ -4,13 +4,14 @@ using UnityEngine;
 public class InteractableObject : NetworkBehaviour, IInteractable
 {
     [SerializeField] private Sprite itemIcon; // Icona per l'inventario
-    [SerializeField] private string requiredCombination;
+    [SerializeField] private string requiredCombination = "1712";
     [SerializeField] private bool requiresCombination = false;
     [SerializeField] private bool shouldDropSprite = false;
     private Outline outline; // Riferimento al componente Outline
     private bool isInteractable = true; // Flag per gestire l'interazione
     [SerializeField] private GameObject door; // La porta che deve essere aperta
 
+    [SerializeField] private AudioClip interactionSound; // Suono per l'interazione
 
     private void Awake()
     {
@@ -153,6 +154,7 @@ public class InteractableObject : NetworkBehaviour, IInteractable
                     Debug.LogWarning("Inventario pieno!");
                 }
             }
+            AudioManager.PlayClip(interactionSound);
             NotifyClientsObjectTakenClientRpc();
         }
     }

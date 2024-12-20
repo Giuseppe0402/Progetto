@@ -48,7 +48,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  GlobalObjectIdHash: 224038425
+  GlobalObjectIdHash: 561887084
   InScenePlacedSourceGlobalObjectIdHash: 2304186672
   DeferredDespawnTick: 0
   Ownership: 1
@@ -96,8 +96,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   ShowTopMostFoldoutHeaderGroup: 1
   itemIcon: {fileID: 21300000, guid: 2be350e5bc1a04d419bcf2437f2608e5, type: 3}
-  requiredCombination: 1234
+  requiredCombination: 1712
   requiresCombination: 1
+  shouldDropSprite: 0
+  door: {fileID: 0}
+  interactionSound: {fileID: 0}
 --- !u!114 &3381685997764911882
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -113,6 +116,9 @@ MonoBehaviour:
   panel: {fileID: 0}
   combinationInput: {fileID: 0}
   confirmButton: {fileID: 0}
+  openPanelSound: {fileID: 0}
+  correctCombinationSound: {fileID: 0}
+  incorrectCombinationSound: {fileID: 0}
 --- !u!1 &8513097544430787684
 GameObject:
   m_ObjectHideFlags: 0
