@@ -4,6 +4,9 @@ using TMPro;
 
 public class Timer : NetworkBehaviour
 {
+
+    [SerializeField] private GameObject porta1;
+    [SerializeField] private GameObject porta2;
     public float timeLimit = 300f; // Tempo di inizio in secondi (5 minuti)
     private float timeRemaining;
     public TextMeshProUGUI timerText; // Riferimento al testo del timer (ui globale)
@@ -12,6 +15,7 @@ public class Timer : NetworkBehaviour
     private NetworkVariable<float> networkTime = new NetworkVariable<float>(300f, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private bool timerActive = false; // Flag per verificare se il timer è attivo
+    private bool gameEnded = false; // Flag per sapere se il gioco è finito
 
     void Start()
     {
@@ -33,11 +37,29 @@ public class Timer : NetworkBehaviour
             else
             {
                 timeRemaining = 0;
-                EndGame(); // Quando il tempo scade
+                EndGame(false); // Quando il tempo scade
             }
         }
 
+        CheckPorte();
         UpdateTimerDisplay(); // Aggiorna il display globale
+    }
+
+    void CheckPorte()
+    {
+        if (!porta1.activeSelf && !porta2.activeSelf) // Se entrambe le porte sono disattivate
+        {
+            EndGame(true);
+        }
+    }
+
+    void StopTimer()
+    {
+        if (IsServer)
+        {
+            timerActive = false;
+            Debug.Log("Timer fermato! Entrambe le porte sono chiuse.");
+        }
     }
 
     void UpdateTimerDisplay()
@@ -57,10 +79,24 @@ public class Timer : NetworkBehaviour
         }
     }
 
-    void EndGame()
+    void EndGame(bool hasWon)
     {
-        // Azioni da fare quando il timer scade (fine del gioco)
-        Debug.Log("Tempo scaduto! Fine del gioco.");
-        // Puoi aggiungere il codice per terminare il gioco o mostrare un pannello di game over.
+        if (gameEnded) return; // Se il gioco è già finito, non fare nulla
+
+        gameEnded = true; // Segna che il gioco è terminato
+
+        StopTimer();
+        if (hasWon)
+        {
+            // Mostra messaggio di vittoria
+            timerText.text = "Hai vinto!";
+            Debug.Log("Hai vinto! Entrambe le porte sono state aperte.");
+        }
+        else
+        {
+            // Mostra messaggio di sconfitta
+            timerText.text = "Tempo scaduto! Hai perso!";
+            Debug.Log("Tempo scaduto! Hai perso.");
+        }
     }
 }

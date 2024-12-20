@@ -6,8 +6,11 @@ public class InteractableObject : NetworkBehaviour, IInteractable
     [SerializeField] private Sprite itemIcon; // Icona per l'inventario
     [SerializeField] private string requiredCombination;
     [SerializeField] private bool requiresCombination = false;
+    [SerializeField] private bool shouldDropSprite = false;
     private Outline outline; // Riferimento al componente Outline
     private bool isInteractable = true; // Flag per gestire l'interazione
+    [SerializeField] private GameObject door; // La porta che deve essere aperta
+
 
     private void Awake()
     {
@@ -97,6 +100,18 @@ public class InteractableObject : NetworkBehaviour, IInteractable
     {
         if (!isInteractable) return;
 
+        // Se la torcia viene interagita, fai sparire la porta
+        if (door != null)
+        {
+            // Disabilita la porta (nascondila dalla scena)
+            door.SetActive(false);
+            Debug.Log("La porta è stata disabilitata e ora è sparita dalla scena.");
+        }
+        else
+        {
+            Debug.LogWarning("Nessuna porta associata all'oggetto.");
+        }
+
         if (requiresCombination)
         {
             if (!string.IsNullOrEmpty(requiredCombination))
@@ -125,13 +140,12 @@ public class InteractableObject : NetworkBehaviour, IInteractable
 
             // Logica normale per aggiungere direttamente l'oggetto all'inventario
             Inventory inventory = FindFirstObjectByType<Inventory>();
-            if (inventory != null)
+            if (inventory != null && shouldDropSprite)
             {
                 bool added = inventory.AddToInventory(gameObject, itemIcon);
                 if (added)
                 {
                     Debug.Log($"{gameObject.name} aggiunto all'inventario.");
-                    NotifyClientsObjectTakenClientRpc();
                     NotifyClientInventoryUpdateClientRpc(player.OwnerClientId, gameObject.GetComponent<NetworkObject>().NetworkObjectId, itemIcon.name);
                 }
                 else
@@ -139,6 +153,7 @@ public class InteractableObject : NetworkBehaviour, IInteractable
                     Debug.LogWarning("Inventario pieno!");
                 }
             }
+            NotifyClientsObjectTakenClientRpc();
         }
     }
 

@@ -4,6 +4,8 @@ public class Trigger : MonoBehaviour
 {
     [SerializeField] private bool activatesTimer = false; // Specifica se questo trigger attiva il timer
     [SerializeField] private GameObject porta;
+    [SerializeField] private AudioSource audioSource; // Componente audio
+    private bool hasPlayedAudio = false; // Variabile per tracciare se il suono è già stato riprodotto
     private void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player")) // Assicurati che il giocatore abbia il tag "Player"
@@ -22,6 +24,12 @@ public class Trigger : MonoBehaviour
             if (interactable != null)
             {
                 interactable.SetInteractable(false); // Disabilita le interazioni
+            }
+
+            if (audioSource != null && !audioSource.isPlaying && !hasPlayedAudio)
+            {
+                audioSource.Play();
+                hasPlayedAudio = true; // Imposta la variabile per non riprodurre più il suono
             }
         }
     }
