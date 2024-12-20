@@ -104,9 +104,8 @@ public class InteractableObject : NetworkBehaviour, IInteractable
         // Se la torcia viene interagita, fai sparire la porta
         if (door != null)
         {
-            // Disabilita la porta (nascondila dalla scena)
-            door.SetActive(false);
-            Debug.Log("La porta è stata disabilitata e ora è sparita dalla scena.");
+            // Richiama una funzione server RPC per gestire la sincronizzazione
+            ToggleDoorServerRpc(false); // Disabilita la porta
         }
         else
         {
@@ -212,6 +211,39 @@ public class InteractableObject : NetworkBehaviour, IInteractable
                     inventory.AddToInventory(item, itemIcon);
                 }
             }
+        }
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void ToggleDoorServerRpc(bool state)
+    {
+        // Aggiorna lo stato della porta sul server
+        if (door != null)
+        {
+            door.SetActive(state);
+            Debug.Log($"Server: Stato porta impostato su {state}.");
+
+            // Notifica i client
+            ToggleDoorClientRpc(state);
+        }
+        else
+        {
+            Debug.LogWarning("Server: Nessuna porta associata per sincronizzazione.");
+        }
+    }
+
+    [ClientRpc]
+    private void ToggleDoorClientRpc(bool state)
+    {
+        // Aggiorna lo stato della porta sui client
+        if (door != null)
+        {
+            door.SetActive(state);
+            Debug.Log($"Client: Stato porta sincronizzato su {state}.");
+        }
+        else
+        {
+            Debug.LogWarning("Client: Nessuna porta associata per aggiornamento.");
         }
     }
 
